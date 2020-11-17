@@ -1,0 +1,17 @@
+Octales
+053
+034
+01
+Hexadecimales
+0x34
+0xA4f5
+0xABCD
+Enteros
+1
+12
+123
+Reales
+24.0
+0.0
+0.365
+3.1426
