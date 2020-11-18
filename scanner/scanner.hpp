@@ -5,29 +5,35 @@
 using namespace std;
 
 
-//typedef enum etoken {_err, _eof, _id, }token;
-typedef enum etoken {_err, _eof, _id, _int, _real ,_hex, _oct}token;
+typedef enum etoken {_err, _eof, _id, _int, _real ,_hex, _oct, _del, _punt, _oprt, _coment, _print, _true, _false}token;
 
 class scanner{
   
-  char read(){ 
-    return file.get(); 
-  } 
-  void fallback(){ 
-    file.seekg(-1, file.cur); 
-  }
-  void success(){
-    pos = file.tellg();
-  }
   void fail(){
     file.seekg(pos,file.beg); 
   }
+
+  void fallback(){ 
+    file.seekg(-1, file.cur); 
+  }
+
+  char read(){ 
+    return file.get(); 
+  } 
+ 
+  void success(){
+    pos = file.tellg();
+  }
+ 
 
   ifstream file;
   streampos pos;
 
 static const int udef;
-
+  token reserved(); 
+  token reservadas();
+  token opr();
+  bool coment(); 
   bool id();
   token num();
   bool hex();
