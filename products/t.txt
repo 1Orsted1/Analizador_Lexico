@@ -1,14 +1,17 @@
+1
+_3x
+#%
+feliz_____
+fel.:!iz#[]()
 t1rue12
 truefalseprint
 tr#ue false print
-0
-true#
-
+true#G
 0.0
 Octales
-053
-034
-01
+53
+34
+1
 Hexadecimales
 0x34
 0xA4f5

@@ -1,7 +1,11 @@
+Todo esto es texto random
+por[ que tanto ] escandalo(
+Son las 3:48 de la madrugada
 Octales
 053
 034
 01
+#esto no debe salir de aqui
 Hexadecimales
 0x34
 0xA4f5

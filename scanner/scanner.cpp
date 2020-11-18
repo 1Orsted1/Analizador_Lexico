@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
-#include <system_error>
 #include <map>
 #define agregarC(char) palabra += c;
 #define agregarN(char) numero +=c;
@@ -53,7 +52,6 @@ bool scanner::id(){
 	break;
       case 2:
 	if(isalnum(c) || c == '_'){agregarC(c); actual = 2;}
-	//if(!compararC(c)){actual = udef;}
 	else actual = udef;
     }
   }
@@ -70,137 +68,91 @@ bool scanner::id(){
 token scanner::num(){
 
   int actual = 0,prior = udef, i;
-  bool noInteger = false;
-  bool isOctal = false;
-  bool isHex = false;
   while(actual != udef){
     char c = read();
     prior = actual;
     switch (actual) {
       case 0:
-	if(isdigit(c)){
-
-	  if(c == '0'){
-	    agregarN(c);
-	    noInteger  = true;
-	    actual = 1;
-	  }else{
-	    agregarN(c);
-	    actual = 1;
-	  }
+	if(isdigit(c))
+	{
+	  if(c == '0'){ agregarN(c); actual = 4;}
+	  else{ agregarN(c); actual = 1; }
 	}
 	else  actual = udef;
 	break;
-
       case 1:
-	if(noInteger == false){
-	  //no fue un cero,  es un entero o un real.
-	  if(isdigit(c)){agregarN(c); actual =1;}
-	  else if(c == '.'){agregarN(c); actual = 2;}
-	  else if(!compararC(c) && !isspace(c) && c !='#'){ actual = 6;}
-	  else{actual = udef;}
-	  //aqui abajo fue cero
-	}else if(isdigit(c) && !compararC(c) && c !='#'){
-	  i = c -48;
-	  if(i >= 0 && i <  8){
-	    agregarN(c);
-	    isOctal = true;
-	    actual = 2;
-	  }else{
-	    actual = 6;
-	  }
-	}else if(c == 'x' || c == 'X'){
-	  agregarN(c);
-	  isHex = true;
-	  actual = 2;}
-	else if(c == '.'){agregarN(c); actual = 2;}
-	else if(isspace(c) || compararC(c) || c != '#'){
-	  isOctal = true;
-	  fallback();
-	  actual = 2;
-	}
-	else actual = 6;
-
+	if(isdigit(c)){agregarN(c); actual =1;}
+	else if(c == '.'){agregarN(c); actual = 3;}
+	else if(!compararC(c) && !isspace(c) && c !='#'){ actual = 9;}
+	else{actual = udef;}
 	break;
-
-	//no fue cero por lo que solo puede ser numero real
       case 2:
-	//fue un numero distinto de 0 al cual siguio de un punto
-	if(noInteger == false){
-	  if(isdigit(c)){agregarN(c); actual = 3;}
-	  else if(!isspace(c)){actual = 6;}
-	  else actual = udef;
-	}else{
-	  //fue un cero al cual le siguio un numero del 0-7
-	  if(isOctal == true){
-	    //estado final octal
-	    i = c - 48;
-	    if(i >= 0 && i <  8){
-	      agregarN(c);
-	      actual = 2;
-	    }else if(!isspace(c) && !compararC(c) && c !='#'){ actual = 6;}
-	    else actual = udef;
-	  }
-	  //fue un cero el cual le siguio un caracter x o X
-	  else if (isHex == true) {
-	    if (isxdigit(c) != 0){agregarN(c); actual = 4;}
-	    else if(!isspace(c)){actual = 6;}
-	    else {fallback(); actual = 4;}
-	  }
-	  //fue un cero el cual le siguio un .
-	  else if(isdigit(c)){agregarN(c); actual = 3;}
-	  else if(!isspace(c)){actual = 6;}
-	  else if(isspace(c)){actual = udef;}
-	}
+	if(isdigit(c)){agregarN(c); actual = 3;}
+	else if(!isspace(c)){actual = 6;}
+	else actual = udef;
 	break;
-
-	//estado final del real:
       case 3:
 	if(isdigit(c)){agregarN(c); actual = 3;}
-	//por aqui colocar el evaluador;
-	else if(!isspace(c) && !compararC(c) && c != '#'){actual = 6;}
+	else if(!isspace(c) && !compararC(c) && c != '#'){actual = 9;}
 	else actual = udef;
 	break;
-
       case 4:
-	if (isxdigit(c) != 0){agregarN(c); actual = 5;}
+	if(isdigit(c) && !compararC(c) && c !='#')
+	{
+	  i = c -48;
+	  if(i >= 0 && i <  8){agregarN(c);actual = 8;}
+	  else{actual = 9;}
+	}
+	else if(c == 'x' || c == 'X'){agregarN(c);actual = 5;}
+	else if(c == '.'){agregarN(c); actual = 3;}
+	else if( compararC(c) || isspace(c) || c =='#' ){fallback(); actual = 8;}
+	else actual = 9;
+	break;
+      case 5:
+	if (isxdigit(c)!=0){agregarN(c); actual = 6;}
+	else if(!isspace(c)){actual = 9;}
+	else {fallback(); actual = 6;}
+	break;
+      case 6:
+	if (isxdigit(c) != 0){agregarN(c); actual = 7;}
 	else if(!isspace(c) && !compararC(c) && c != '#'){actual = 6;}
 	else actual = udef;
 	break;
+      case 7:
 
-	//Estado final hexadecimal
-      case 5:
-	if (isxdigit(c) != 0){agregarN(c); actual = 4;}
+	if (isxdigit(c) != 0){agregarN(c); actual = 6;}
 	else if(!isspace(c) && !compararC(c) &&  c != '#'){actual = 6;}
 	else actual = udef;
-	break;
 
-      case 6:
+	break;
+      case 8:
+	i = c - 48;
+	if(i >= 0 && i <  8){agregarN(c);actual = 8;}
+	else if(!isspace(c) && !compararC(c) && c !='#'){ actual = 9;}
+	else actual = udef;
+	break;
+      case 9:
 	actual = udef;
 	break;
-    }
-
-  }
-  if(prior == 1 || prior == 3 || prior == 5 || prior == 2){
+    }}
+  if(prior == 1 || prior == 3 || prior == 8 || prior == 7){
     fallback();
     success();
   }
   if (prior == 1){return _int;}
   if (prior == 3)return _real;
-  if (prior == 2)return _oct;
-  if (prior == 5)return _hex;
+  if (prior == 8)return _oct;
+  if (prior == 7)return _hex;
 
   fail();
   return _err;
 }
 
-
 token scanner::opr(){
   char c = read();
   oprts = "";
-  //estado de aceptacion
   if(compararC(c)){
-    if(c == '[' || c == ']' || c == '(' || c == ')'){oprts = c;return _del;} 
+    if(c == '[' || c == ']' || c == '(' || c == ')'){oprts = c;return _del;}
     else if(c == '.' || c == ',' || c == ';'){oprts = c;return _punt;}
     else if( c == ':' || c == '&' || c == '|' || c == '!'){oprts = c;return _oprt;}
     else if(c == '-'){
@@ -227,11 +179,8 @@ token scanner::reserved() {
   while (actual != udef) {
     char c = read();
     prior = actual;
-    if (islower(c)) {
-      palabra +=c;
-
-      actual = 1;
-    }else if( isspace(c) || compararC(c) ||  c == '#' ){actual = udef;}
+    if (islower(c)) {palabra +=c; actual = 1;}
+    else if( isspace(c) || compararC(c) ||  c == '#' ){actual = udef;}
     else{fail();return _err;
     }
   };
@@ -288,7 +237,6 @@ bool scanner::eof(){
 
 token scanner::next(){
 
-
   wsp();
 
   if(coment()){return _coment;}
@@ -297,8 +245,7 @@ token scanner::next(){
     case _print:return _print;break;
     case _true:return _true;break;
     case _false:return _false;break;
-    default:
-      break;
+    default:break;
   }
 
   if(id())return _id;
@@ -319,7 +266,6 @@ token scanner::next(){
   }
 
   if(eof())return _eof;
+  
   return _err;
 }
-
-
